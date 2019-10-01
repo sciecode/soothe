@@ -159,19 +159,18 @@ void main() {
 
     vec3 normal = texture2D( texture, uv ).xyz;
   
-    vec3 view = vec3( 0.0, 0.0, 1.2 );
+    vec3 viewPos = vec3( 0.0, 0.0, 1.2 );
     vec3 lightPos = vec3( 0.0, 1.5, 0.98 );
-    vec3 fragPos = vec3( ( 2.0 * uv - 1.0 ), 0.97 );
-    vec3 sPos = vec3( fragPos.xy, normal.z );
+    vec3 fragPos = vec3( ( 2.0 * uv - 1.0 ), normal.z );
     
     vec3 L = normalize( lightPos - fragPos );
-    vec3 H = normalize( L + normalize( view - sPos ) );
+    vec3 H = normalize( L + normalize( viewPos - fragPos ) );
     vec3 dN = vec3( normal.xy, normal.z/2.0 + 0.28 );
 
     float dif = max( dot( dN, L ), 0.0 );
     float spec = clamp( dot( normalize(normal), H ), 0.0, 1.0 );
 
-    float attenuation = 1.0 - length( lightPos - fragPos ) / 3.0;
+    float attenuation = 1.0 - length( lightPos - fragPos ) / 3.1;
     vec3 dif_int = vec3( dif * 0.3 * attenuation  );
 
     float shininess = 2.8;
