@@ -12,14 +12,8 @@ void main() {
 const prep_frag = `
 precision highp float;
 
-uniform vec2 resolution;
-uniform sampler2D texture;
-
 void main() {
-    vec2 uv = gl_FragCoord.xy / resolution.xy;
-    gl_FragColor.xyz = texture2D( texture, uv ).xyz;
     gl_FragColor.z = 0.012;
-    gl_FragColor.a = 0.0;
 }
 `;
 
@@ -115,16 +109,16 @@ void main() {
 
   float isDisp = step( 0.5, mouse.z ); // is displaced
   
-  if ( dist <= mSize ) {
+  if ( mouse.z > 0.5 && dist <= mSize ) {
 
-    float dst = isDisp * ( mSize - dist ) / mSize;
+    float dst = ( mSize - dist ) / mSize;
     f.z += pow( abs(dst), 1.9 ) * peak * 2.5;
     f.xy -= f.xy * pow( abs(dst), 3.9 ) * 0.1;
     f.z = min( peak, f.z );
 
   }
 
-  gl_FragColor = vec4( f, vel );
+  gl_FragColor = clamp( vec4( f, vel ), -1.0, 1.0);
 
 }
 `;
@@ -191,8 +185,6 @@ void main() {
 //
 // three.js setup
 //
-
-
 const w = window.innerWidth;
 const h = window.innerHeight;
 const res = new THREE.Vector2(w, h);
@@ -208,16 +200,12 @@ const scene = new THREE.Scene();
 const camera = new THREE.Camera();
 
 
-// basic empty texture
-const empty = new Float32Array(h * w * 4);
-const texture = new THREE.DataTexture(empty, w, h, THREE.RGBAFormat, THREE.FloatType);
-
 // render targets
 let rtt = new THREE.WebGLRenderTarget(w, h, {
 	minFilter: THREE.LinearFilter,
 	magFilter: THREE.LinearFilter,
 	format: THREE.RGBAFormat,
-	type: THREE.FloatType,
+	type: ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) ? THREE.HalfFloatType : THREE.FloatType,
 	depthTest: false,
 	depthBuffer: false,
 	stencilBuffer: false
@@ -229,12 +217,7 @@ let rtt2 = rtt.clone();
 //
 // materials
 //
-
 const copyMaterial = new THREE.ShaderMaterial({
-	uniforms: {
-		resolution: { type: 'v2', value: res },
-		texture: { type: 't', value: texture }
-	},
 	vertexShader: basic_vert,
 	fragmentShader: prep_frag,
 	blending: THREE.NoBlending,
