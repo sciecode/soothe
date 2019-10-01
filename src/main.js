@@ -66,7 +66,7 @@ vec3 computeNormal( vec4 n ) {
   // right - left, up - down;
   vec2 xy = vec2( dn.x - dn.y, dn.z - dn.w );
   xy += n_r.xy + n_l.xy + n_u.xy + n_d.xy;
-  xy *= 0.976; // energy dissipation
+  xy *= 0.972; // energy dissipation
 
   float z;
   z += dot( n_r.xy, - vec2( 1, 0 ) );
@@ -91,7 +91,7 @@ void main() {
   float vel = h.a;
   // apply elastic-viscous acceleration
   // acc = - offset*elasticity - vel*viscosity
-  vel += - ( h.z - 0.012 ) * 0.016 - vel * 0.056;
+  vel += - ( h.z - 0.012 ) * 0.016 - vel * 0.059;
 
   // compute normal advection
   vec3 f = computeNormal( h );
@@ -165,16 +165,18 @@ void main() {
     float spec = clamp( dot( normalize(N), H ), 0.0, 1.0 );
 
     float attenuation = 1.0 - length( lightPos - fragPos ) / 3.1;
-    vec3 dif_int = vec3( dif * 0.3 * attenuation  );
+    vec3 dif_int = vec3( dif * 0.056 * attenuation  );
 
-    float shininess = 2.8;
+    float shininess = 4.8;
     float ref = RECIPROCAL_PI * ( shininess * 0.5 + 1.0 ) * pow( spec, shininess );
-    vec3 spec_int = vec3( ref * 0.6 * pow( attenuation, 3.0 )  );
+    vec3 spec_int = vec3( ref * 0.38 * pow( attenuation, 3.0 )  );
 
     vec3 col = dif_int + spec_int;
 
+    col = pow( col, vec3( 1.0 / 2.2 ) );
+
     col.r = mix( col.r * 1.28, col.r, length( dif_int ) * 1.2 / 3.0 );
-    col += 0.045;
+    // col += 0.045;
 
     gl_FragColor = vec4( dithering(col), 1.0 );
 
